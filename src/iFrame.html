@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JavaScript Auto Adjust iFrame Height Based on Content</title>
+</head>
+<body>
+<iframe id="myIframe" scrolling="no" frameborder="none" src="./frankenthal.html"></iframe>
+
+<script>
+    const iframe = document.getElementById("myIframe");
+
+    iframe.onload = ResizeFrame;
+    iframe.contentWindow.onclick = ResizeFrame;
+
+    function ResizeFrame() {
+        iframe.style.width = '100%'
+        iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+    }
+</script>
+</body>
+</html>

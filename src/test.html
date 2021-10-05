@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        #chartWrapper {
+            position: relative;
+        }
+
+        #chartWrapper > canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            pointer-events: none;
+        }
+
+        #chartAreaWrapper {
+            width: 600px;
+            overflow-x: scroll;
+        }
+    </style>
+    <title>iFrame</title>
+</head>
+<body>
+<div id="chartWrapper">
+    <div id="chartAreaWrapper">
+        <div id="chartAreaWrapper2">
+            <canvas height="300" id="chart-FuelSpend" width="1200"></canvas>
+        </div>
+    </div>
+    <canvas height="300" id="axis-FuelSpend" width="0"></canvas>
+</div>
+<script>
+    function generateLabels() {
+        const chartLabels = [];
+        for (let x = 0; x < 100; x++) {
+            chartLabels.push("Label" + x);
+        }
+        return chartLabels;
+    }
+
+    function generateData() {
+        const chartData = [];
+        for (let x = 0; x < 100; x++) {
+            chartData.push(Math.floor((Math.random() * 100) + 1));
+        }
+        return chartData;
+    }
+
+    const chartAreaWrapper2 = document.getElementById('chartAreaWrapper2');
+
+    function addData(numData, chart) {
+        for (let i = 0; i < numData; i++) {
+            chart.data.datasets[0].data.push(Math.random() * 100);
+            chart.data.labels.push("Label" + i);
+            const newWidth = chartAreaWrapper2.width() + 60;
+            chartAreaWrapper2.width(newWidth);
+        }
+    }
+
+    var chartData = {
+        labels: generateLabels(),
+        datasets: [{
+            label: "Test Data Set",
+            data: generateData()
+        }]
+    };
+
+    document.onload = () => {
+        const canvasFuelSpend = document.getElementById('chart-FuelSpend');
+        const chartFuelSpend = new Chart(canvasFuelSpend, {
+            type: 'bar',
+            data: chartData,
+            maintainAspectRatio: false,
+            responsive: true,
+            options: {
+                tooltips: {
+                    titleFontSize: 0,
+                    titleMarginBottom: 0,
+                    bodyFontSize: 12
+                },
+                legend: {
+                    display: false
+                },
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            fontSize: 12,
+                            display: false
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            fontSize: 12,
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                animation: {
+                    onComplete: function () {
+                        const sourceCanvas = chartFuelSpend.chart.canvas;
+                        const copyWidth = chartFuelSpend.scales['y-axis-0'].width - 10;
+                        const copyHeight = chartFuelSpend.scales['y-axis-0'].height + chartFuelSpend.scales['y-axis-0'].top + 10;
+                        const targetCtx = document.getElementById("axis-FuelSpend").getContext("2d");
+                        targetCtx.canvas.width = copyWidth;
+                        targetCtx.drawImage(sourceCanvas, 0, 0, copyWidth, copyHeight, 0, 0, copyWidth, copyHeight);
+                    }
+                }
+            }
+        });
+        addData(5, chartFuelSpend);
+    };
+</script>
+</body>
+</html>

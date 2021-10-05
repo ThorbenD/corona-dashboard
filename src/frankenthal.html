@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<!--
+* Copyright (C) Thorben Dreier 2021
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Thorben Dreier <https://github.com/ThorbenD>, June 2021
+* Data API by Marlon Lückert <https://github.com/marlon360/rki-covid-api>
+-->
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard - Coronafallzahlen Frankenthal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@next/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="dataProcessor_obf.js"></script>
+    <script src="lib/jquery-1.8.1.min.js"></script>
+    <script src="lib/jquery.align-column.js"></script>
+    <link href="style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="frame">
+    <div class="header">
+        <div class="title">Aktuelle Corona-Fallzahlen</div>
+        <img class="logo" src="https://www.frankenthal.de/bilder/logos/logo-stadt-blau.png?cid=4.259s">
+    </div>
+    <div class="body">
+        <div class="collapsible">
+            <button class="collapsible-toggle collapsible-header" type="button">
+                <div class="circle-indicator"></div>
+                <div class="collapsible-title" id="collapsible-title">Aktuelle Warnstufe: -</div>
+            </button>
+            <div class="content" data-name="collapsible-content" stackColumnsAt="tablet">
+                <div class="columns">
+                    <div class="collapsible-frame">
+                        <div class="container-title">7-Tage-Inzidenz</div>
+                        <div class="container-value" id="cases7d_per_100k">0</div>
+                        <div class="container-description">Frankenthal</div>
+                    </div>
+                    <div class="collapsible-frame">
+                        <div class="container-title">7-Tage-Hospitalisierungsinzidenz</div>
+                        <div class="container-value" id="incHospital">0</div>
+                        <div class="container-description">auf 100.000 Einwohner</div>
+                    </div>
+                    <div class="collapsible-frame">
+                        <div class="container-title">Intensivkapazität in %</div>
+                        <div class="container-value" id="intMedCapacity">0</div>
+                        <div class="container-description">Rheinland-Pfalz</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-content" data-name="page-content" stackColumnsAt="tablet">
+            <div class="columns">
+                <div class="data-container">
+                    <div class="top-row" data-name="top-row" stackColumnsAt="tablet">
+                        <div class="columns">
+                            <div class="data-frame">
+                                <div class="container-title">Bestätigte Fälle</div>
+                                <div class="container-value" id="newCases">+ 0</div>
+                                <div class="container-description" id="totalCases">Gesamt: 0</div>
+                            </div>
+                            <div class="data-frame">
+                                <div class="container-title">Todesfälle</div>
+                                <div class="container-value" id="newDeaths">+ 0</div>
+                                <div class="container-description" id="totalDeaths">Gesamt: 0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="center-row" data-name="center-row">
+                        <div class="container-title">
+                            Impfquote Erst-/Zweitimpfungen (Rheinland-Pfalz)
+                        </div>
+                        <div class="separator">
+                            <div class="vaccination">
+                                <div class="container-value" id="vac1_percentage">0</div>
+                                <div class="container-description" id="vac1_value">Gesamt: 0</div>
+                            </div>
+                            <div class="vaccination">
+                                <div class="container-value" id="vac2_percentage">0</div>
+                                <div class="container-description" id="vac2_value">Gesamt: 0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-row" data-name="bottom-row" stackColumnsAt="tablet">
+                        <div class="columns">
+                            <div class="data-frame">
+                                <div class="container-title">Reproduktionszahl in %</div>
+                                <div class="container-value" id="rValue">0</div>
+                                <div class="container-description">Deutschland</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chartAreaWrapper">
+                        <div class="chartAreaWrapper2">
+                            <canvas id="chart_inc7d"></canvas>
+                        </div>
+                    </div>
+                    <canvas height="0" id="myChartAxis" width="0"></canvas>
+                    <button class="collapsible-toggle table-collapsible-header" type="button">
+                        <div>hier klicken für frühere Werte</div>
+                    </button>
+                    <div class="table-collapsible-content" data-name="collapsible-content" stackColumnsAt="tablet">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>7-Tage-Inzidenz<br>(Frankenthal)</th>
+                                <th>7-Tage-Hospitalinzidenz<br>(Rheinland-Pfalz)</th>
+                                <th>Intensivkapazität in %<br>(Rheinland-Pfalz)</th>
+                            </tr>
+                            <tbody class="table-body" id="data-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>
+                <strong id="date">Stand: -</strong>
+                | Angezeigte Inhalte dienen der allgemeinen Auskunft. Abweichungen und
+                Irrtümer vorbehalten.
+            </p>
+            <p>
+                Es gelten die offiziellen Meldezahlen. Veröffentlichung von RKI &amp;
+                LUA unterscheiden sich um einen Tag.
+            </p>
+            <p>Mehr Informationen und Quellenangaben.</p>
+        </div>
+    </div>
+</div>
+<script>
+    (() => {
+        const state = {};
+
+        // Function to update data bindings and loops
+        // call update() when you mutate state and need the updates to reflect
+        // in the dom
+        function update() {
+            document.querySelectorAll("[data-name='logo']").forEach((el) => {
+                el.aspectRatio = 0.7;
+            });
+
+            document.querySelectorAll("[data-name='collapsible-content']").forEach((el) => {
+                el.space = 5;
+            });
+
+            document.querySelectorAll("[data-name='page-content']").forEach((el) => {
+                el.space = 10;
+            });
+
+            document.querySelectorAll("[data-name='top-row']").forEach((el) => {
+                el.space = 15;
+            });
+
+            document.querySelectorAll("[data-name='center-row']").forEach((el) => {
+                el.space = 15;
+            });
+
+            document.querySelectorAll("[data-name='bottom-row']").forEach((el) => {
+                el.space = 15;
+            });
+
+            document.querySelectorAll("[data-name='empty']").forEach((el) => {
+                el.aspectRatio = 0.37290836653386455;
+            });
+        }
+
+        // Update with initial state on first load
+        update();
+    })();
+</script>
+<script>
+    const coll = document.getElementsByClassName("collapsible-toggle");
+    let i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function () {
+            const content = this.nextElementSibling;
+            content.style.display = content.style.display !== "flex" ? "flex" : "none";
+        });
+    }
+</script>
+</body>
+</html>

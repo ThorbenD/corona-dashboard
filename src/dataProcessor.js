@@ -110,7 +110,6 @@ function changeColor(collection, element, color) {
 }
 
 function toNumberWithSeperators(x) {
-
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
@@ -139,29 +138,57 @@ async function loadTableData(array) {
         intMedCapacity.innerHTML = item['intMedCapacity'] >= 0 ? item['intMedCapacity'].toString().replace('.', ',') : '-';
     })
     $('table').alignColumn([1], {center: ',', skipTHs: true, debug: true});
+    formatTable();
+}
+
+function formatTable() {
+    const rowSelector = $('#data-table > tr');
+    const navSelector = $('#navigation-buttons')
+
+    const rowsShown = 14;
+    const rowsTotal = rowSelector.length;
+    const numPages = rowsTotal / rowsShown;
+    for (let i = 0; i < numPages; i++) {
+        const pageNum = i + 1;
+        navSelector.append(`<a href="#" rel="${i}">${pageNum}</a>`);
+    }
+
+    rowSelector.hide();
+    rowSelector.slice(0, rowsShown).show();
+
+    $('#navigation-buttons > a:first').addClass('active');
+
+    $('#navigation-buttons > a').bind('click', function () {
+        $('#navigation-buttons > a').removeClass('active');
+        $(this).addClass('active');
+        const currPage = $(this).attr('rel');
+        const startItem = currPage * rowsShown;
+        const endItem = startItem + rowsShown;
+        rowSelector.css('opacity', '0.0').hide().slice(startItem, endItem).css('display', 'table-row').animate({opacity: 1}, 300);
+    });
 }
 
 async function chartData(array) {
-    const htmlElement = document.getElementById('chart_inc7d').getContext('2d');
+    array = array.reverse();
+    let labels = array.map(e => e['date']);
+    let values = array.map(e => e['inc7D']);
 
-    const data = {
-        labels: array.map(e => e['date']),
-        datasets: [
-            {
-                label: '7-Tage-Inzidenz',
-                data: array.map(e => e['inc7D']),
-                backgroundColor: '#ff6384',
-                borderColor: '#ff6384',
-                borderWidth: 4,
-                tension: .3,
-            },
-        ]
-    };
-
-    new Chart(htmlElement, {
-        type: 'line',
-        data: data,
-        responsive: true,
+    const ctx = document.getElementById('chart_inc7d').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '7-Tage-Inzidenz',
+                    data: values,
+                    backgroundColor: '#ff6384',
+                    borderColor: '#ff6384',
+                    borderWidth: 4,
+                    tension: .3,
+                },
+            ],
+        },
         options: {
             radius: 0,
             aspectRatio: 1.75,
@@ -248,4 +275,31 @@ async function chartData(array) {
             },
         }
     });
+
+    const sliders = document.getElementsByClassName('slider');
+    sliders[0].value = labels.length - 14;
+    sliders[1].value = labels.length;
+    for (let i = 0; i < sliders.length; i++) {
+        sliders[i].oninput = getValues;
+        sliders[i].max = labels.length;
+        sliders[i].oninput(undefined);
+    }
+
+    function getValues() {
+        let min = sliders[0].value;
+        let max = sliders[1].value;
+
+        if (min > max) {
+            const tmp = max;
+            max = min;
+            min = tmp;
+        }
+
+        let label = labels.slice(min, max);
+        let value = values.slice(min, max);
+        console.log(`label: ${label},  value: ${value}`);
+        chart.data.labels = label;
+        chart.data.datasets[0].data = value;
+        chart.update();
+    }
 }

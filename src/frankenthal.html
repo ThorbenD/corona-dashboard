@@ -95,6 +95,10 @@
                     <div class="chartAreaWrapper">
                         <div class="chartAreaWrapper2">
                             <canvas id="chart_inc7d"></canvas>
+                            <section class="range-slider">
+                                <input class="slider" max="" min="0" type="range" value=""/>
+                                <input class="slider" max="" min="1" type="range" value=""/>
+                            </section>
                         </div>
                     </div>
                     <canvas height="0" id="myChartAxis" width="0"></canvas>
@@ -102,7 +106,7 @@
                         <div>hier klicken für frühere Werte</div>
                     </button>
                     <div class="table-collapsible-content" data-name="collapsible-content" stackColumnsAt="tablet">
-                        <table>
+                        <table id="data">
                             <thead>
                             <tr>
                                 <th>Datum</th>
@@ -112,6 +116,7 @@
                             </tr>
                             <tbody class="table-body" id="data-table"></tbody>
                         </table>
+                        <div class="navigation-buttons" id="navigation-buttons"></div>
                     </div>
                 </div>
             </div>
@@ -178,7 +183,7 @@
     for (i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function () {
             const content = this.nextElementSibling;
-            content.style.display = content.style.display !== "flex" ? "flex" : "none";
+            content.style.display = content.style.display !== "block" ? "block" : "none";
         });
     }
 </script>

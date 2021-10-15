@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@next/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <style>
+        section.range-slider {
+            position: relative;
+            width: 700px;
+            height: 300px;
+            float: left;
+            text-align: center;
+        }
+
+        section.range-slider input[type="range"] {
+            pointer-events: none;
+            position: absolute;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+            border: none;
+            border-radius: 14px;
+            background: #f1efef;
+            box-shadow: inset 0 1px 0 0 #cdc6c6, inset 0 -1px 0 0 #d9d4d4;
+            -webkit-box-shadow: inset 0 1px 0 0 #cdc6c6, inset 0 -1px 0 0 #d9d4d4;
+            overflow: hidden;
+            left: 0;
+            top: 50px;
+            width: 700px;
+            outline: none;
+            height: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        section.range-slider input[type="range"]::-webkit-slider-thumb {
+            pointer-events: all;
+            position: relative;
+            z-index: 1;
+            outline: 0;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 14px;
+            background-image: -webkit-gradient(
+                    linear,
+                    left top,
+                    left bottom,
+                    color-stop(0%, #dad8da),
+                    color-stop(100%, #413f41)
+            );
+            /* android <= 2.2 */
+            background-image: -webkit-linear-gradient(top, #dad8da 0, #413f41 100%);
+            /* older mobile safari and android > 2.2 */
+            background-image: linear-gradient(to bottom, #dad8da 0, #413f41 100%);
+            /* W3C */
+        }
+
+        section.range-slider input[type="range"]::-moz-range-thumb {
+            pointer-events: all;
+            position: relative;
+            z-index: 10;
+            -moz-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 14px;
+            background-image: linear-gradient(to bottom, #dad8da 0, #413f41 100%);
+            /* W3C */
+        }
+
+        section.range-slider input[type="range"]::-ms-thumb {
+            pointer-events: all;
+            position: relative;
+            z-index: 10;
+            -ms-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 14px;
+            border: 0;
+            background-image: linear-gradient(to bottom, #dad8da 0, #413f41 100%);
+            /* W3C */
+        }
+
+        section.range-slider input[type="range"]::-moz-range-track {
+            position: relative;
+            z-index: -1;
+            background-color: black;
+            border: 0;
+        }
+
+        section.range-slider input[type="range"]:last-of-type::-moz-range-track {
+            -moz-appearance: none;
+            background: none transparent;
+            border: 0;
+        }
+
+        section.range-slider input[type="range"]::-moz-focus-outer {
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+<div style="width: 500pt;">
+    <canvas id="myChart" style="display: block;width: 1333px;height: 369px;"></canvas>
+    <section class="range-slider">
+        <div class="rangeValues"></div>
+        <input class="slider" max="" min="0" type="range" value=""/>
+        <input class="slider" max="" min="1" type="range" value=""/>
+    </section>
+</div>
+<script>
+    async function fetchData() {
+        let response = await fetch('https://api.covid-frankenthal.de/corona/last?days=60&projExpr=inc7D, incHospital, intMedCapacity')
+            .then(r => r.json());
+
+        return response.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    fetchData()
+        .then(result => {
+            result = result.reverse();
+            let labels = result.map(e => e['date']);
+            let values = result.map(e => e['inc7D']);
+
+            const ctx = document.getElementById("myChart").getContext("2d");
+            const chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '7-Tage-Inzidenz',
+                            data: values,
+                            backgroundColor: '#ff6384',
+                            borderColor: '#ff6384',
+                            borderWidth: 4,
+                            tension: .3,
+                        },
+                    ],
+                },
+                options: {
+                    radius: 0,
+                    aspectRatio: 1.75,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                font: function (context) {
+                                    let width = context.chart.width;
+                                    let size = Math.round(width / 50);
+
+                                    return {
+                                        weight: 'bold',
+                                        size: size
+                                    };
+                                },
+                            },
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Entwicklung 7-Tage-Inzidenz (FT)',
+                            font: function (context) {
+                                let width = context.chart.width;
+                                let size = Math.round(width / 32);
+
+                                return {
+                                    weight: 'bold',
+                                    size: size
+                                };
+                            }
+                        }
+                    },
+                    parsing: {
+                        xAxisKey: 'date',
+                        yAxisKey: 'weekIncidence'
+                    },
+                    scales: {
+                        xAxis: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'd. MMM:',
+                                displayFormats: {
+                                    day: 'd. MMM'
+                                },
+                            },
+                            display: true,
+                            grid: {
+                                display: false,
+                            },
+                            drawTicks: false,
+                            ticks: {
+                                font: function (context) {
+                                    let width = context.chart.width;
+                                    let size = Math.round(width / 50);
+
+                                    return {
+                                        weight: 'bold',
+                                        size: size
+                                    };
+
+                                },
+                            }
+                        },
+                        yAxis: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: function (context) {
+                                    let width = context.chart.width;
+                                    let size = Math.round(width / 50);
+
+                                    return {
+                                        weight: 'bold',
+                                        size: size
+                                    };
+                                }
+                            }
+                        }
+                    },
+                }
+            });
+
+            const sliders = document.getElementsByClassName('slider');
+            sliders[0].value = labels.length - 14;
+            sliders[1].value = labels.length;
+            for (let i = 0; i < sliders.length; i++) {
+                sliders[i].oninput = getValues;
+                sliders[i].max = labels.length;
+            }
+
+            function getValues() {
+                let min = sliders[0].value;
+                let max = sliders[1].value;
+
+                if (min > max) {
+                    const tmp = max;
+                    max = min;
+                    min = tmp;
+                }
+
+                let label = labels.slice(min, max);
+                let value = values.slice(min, max);
+                console.log(`label: ${label},  value: ${value}`);
+                chart.data.labels = label;
+                chart.data.datasets[0].data = value;
+                chart.update();
+            }
+        })
+        .catch(err => console.log(err));
+</script>
+</body>
+</html>
+

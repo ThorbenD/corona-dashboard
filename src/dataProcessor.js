@@ -78,7 +78,7 @@ window.onload = async function updatePage() {
 }
 
 function switchCase(inc7d, incHospital, intMedCapacity) {
-    if (inc7d > 200 & incHospital > 10 & intMedCapacity > 12) {
+    if (inc7d > 200 && incHospital > 10 && intMedCapacity > 12) {
         changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(200, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 80%)');
         changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(255,0,0)');
         changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgb(116,0,0)');
@@ -87,7 +87,7 @@ function switchCase(inc7d, incHospital, intMedCapacity) {
         return;
     }
 
-    if (inc7d > 100 & incHospital >= 5 & intMedCapacity > 6) {
+    if (inc7d > 100 && (incHospital >= 5 || intMedCapacity > 6) || (incHospital >= 5 && intMedCapacity > 6)) {
         changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(251, 186, 0, 0.3) 0%, rgba(0, 0, 0, 0) 80%)');
         changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(251,151,0)');
         changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgb(251,226,0)');

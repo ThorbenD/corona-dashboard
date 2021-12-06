@@ -1,42 +1,5 @@
-window.onload = async function updatePage() {
-    try {
-        const response = await fetch('https://api.covid-frankenthal.de/corona?date=0', {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        });
-
-        response.json()
-            .then(json => {
-                const data = json['0'];
-                document.getElementById('newCases').innerText = `+ ${data['newCases'] >= 0 ? data['newCases'] : 0}`;
-                document.getElementById('totalCases').innerText = `Gesamt: ${toNumberWithSeperators(data['totalCases'])} (Frankenthal)`;
-                document.getElementById('newDeaths').innerText = `+ ${data['newDeaths'] >= 0 ? data['newDeaths'] : 0}`;
-                document.getElementById('totalDeaths').innerText = `Gesamt: ${data['totalDeaths']} (Frankenthal)`;
-                document.getElementById('vac1_percentage').innerText = `${(data['vaccination1Ratio'] * 100).toFixed(1).replace('.', ',')}%`;
-                document.getElementById('vac1_value').innerText = `Gesamt: ${toNumberWithSeperators(data['vaccination1'])}`;
-                document.getElementById('vac2_percentage').innerText = `${(data['vaccination2Ratio'] * 100).toFixed(1).replace('.', ',')}%`;
-                document.getElementById('vac2_value').innerText = `Gesamt: ${toNumberWithSeperators(data['vaccination2'])}`;
-                document.getElementById('cases7d_per_100k').innerText = data['inc7D'] >= 0 ? data['inc7D'].toFixed(1).replace('.', ',') : '-';
-                document.getElementById('rValue').innerText = data['rValue'] >= 0 ? data['rValue'].toString().replace('.', ',') : '-';
-                document.getElementById('incHospital').innerText = data['incHospital'] >= 0 ? data['incHospital'].toString().replace('.', ',') : '-';
-                document.getElementById('intMedCapacity').innerText = data['intMedCapacity'] >= 0 ? data['intMedCapacity'].toString().replace('.', ',') : '-';
-
-                document.getElementById('date').innerText = `Stand: ${new Date(data['date']).toLocaleDateString()}`;
-
-                switchCase(JSON.parse(data['inc7D']), JSON.parse(data['incHospital']), JSON.parse(data['intMedCapacity']));
-
-                fetchData()
-                    .then(res => {
-                        loadTableData(res);
-                        chartData(res);
-                    });
-            });
-
-    } catch (err) {
-        document.querySelector('html').innerHTML = `
+function DisplayPageUnderConstructionWarning() {
+    document.querySelector('html').innerHTML = `
             <!doctype html>
             <title>Site Maintenance</title>
             <style>
@@ -74,33 +37,89 @@ window.onload = async function updatePage() {
                 </div>
             </article>
         `;
+}
+
+window.onload = async function updatePage() {
+    const debug = false;
+    try {
+        if (debug) {
+            DisplayPageUnderConstructionWarning();
+            return;
+        }
+
+        const response = await fetch('https://api.covid-frankenthal.de/corona?date=0', {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        });
+
+        response.json()
+            .then(json => {
+                const data = json['0'];
+                document.getElementById('newCases').innerText = `+ ${data['newCases'] >= 0 ? data['newCases'] : 0}`;
+                document.getElementById('totalCases').innerText = `Gesamt: ${toNumberWithSeperators(data['totalCases'])} (Frankenthal)`;
+                document.getElementById('newDeaths').innerText = `+ ${data['newDeaths'] >= 0 ? data['newDeaths'] : 0}`;
+                document.getElementById('totalDeaths').innerText = `Gesamt: ${data['totalDeaths']} (Frankenthal)`;
+                document.getElementById('vac1_percentage').innerText = `${(data['vaccination1Ratio'] * 100).toFixed(1).replace('.', ',')}%`;
+                document.getElementById('vac1_value').innerText = `Gesamt: ${toNumberWithSeperators(data['vaccination1'])}`;
+                document.getElementById('vac2_percentage').innerText = `${(data['vaccination2Ratio'] * 100).toFixed(1).replace('.', ',')}%`;
+                document.getElementById('vac2_value').innerText = `Gesamt: ${toNumberWithSeperators(data['vaccination2'])}`;
+                document.getElementById('cases7d_per_100k').innerText = data['inc7D'] >= 0 ? data['inc7D'].toFixed(1).replace('.', ',') : '-';
+                document.getElementById('rValue').innerText = data['rValue'] >= 0 ? data['rValue'].toString().replace('.', ',') : '-';
+                document.getElementById('incHospital').innerText = data['incHospital'] >= 0 ? data['incHospital'].toString().replace('.', ',') : '-';
+                document.getElementById('intMedCapacity').innerText = data['intMedCapacity'] >= 0 ? data['intMedCapacity'].toString().replace('.', ',') : '-';
+
+                document.getElementById('date').innerText = `Stand: ${new Date(data['date']).toLocaleDateString()}`;
+
+                switchCase(JSON.parse(data['inc7D']), JSON.parse(data['incHospital']), JSON.parse(data['intMedCapacity']));
+
+                fetchData()
+                    .then(res => {
+                        loadTableData(res);
+                        chartData(res);
+                    });
+            });
+
+    } catch (err) {
+        DisplayPageUnderConstructionWarning();
     }
 }
 
 function switchCase(inc7d, incHospital, intMedCapacity) {
-    if (inc7d > 200 && incHospital > 10 && intMedCapacity > 12) {
-        changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(200, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 80%)');
-        changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(255,0,0)');
-        changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgb(116,0,0)');
-        changeColor(document.getElementsByClassName("collapsible-frame"), 'background-color', 'rgba(255,0,0,0.3)');
-        document.getElementById('collapsible-title').innerText = 'Aktuelle Warnstufe: 3';
+    if (/*inc7d > 200 && */incHospital > 9 /*&& intMedCapacity > 12*/) {
+        changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(255, 64, 64, 0.3) 0%, rgba(0, 0, 0, 0) 50%)');
+        changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(255,64,64)');
+        changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgba(116, 0, 0, 1)');
+        changeColor(document.getElementsByClassName("collapsible-frame-colored"), 'background-color', 'rgb(255,64,64)');
+        document.getElementById('collapsible-title').innerText = 'Hospitalisierungsinzidenz: Über 9 (rot)';
         return;
     }
 
-    if (inc7d > 100 && (incHospital >= 5 || intMedCapacity > 6) || (incHospital >= 5 && intMedCapacity > 6)) {
-        changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(251, 186, 0, 0.3) 0%, rgba(0, 0, 0, 0) 80%)');
-        changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(251,151,0)');
-        changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgb(251,226,0)');
-        changeColor(document.getElementsByClassName("collapsible-frame"), 'background-color', 'rgba(248,148,6,0.3)');
-        document.getElementById('collapsible-title').innerText = 'Aktuelle Warnstufe: 2';
+    if (/*inc7d > 100 && (*/incHospital >= 6 /*|| intMedCapacity > 6) || (incHospital >= 5 && intMedCapacity > 6)*/) {
+        changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(255, 182, 73, 0.3) 0%, rgba(0, 0, 0, 0) 50%)');
+        changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(255,182,73)');
+        changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgba(251, 226, 0, 1)');
+        changeColor(document.getElementsByClassName("collapsible-frame-colored"), 'background-color', 'rgb(255,182,73)');
+        document.getElementById('collapsible-title').innerText = 'Hospitalisierungsinzidenz: Über 6 (orange)';
         return;
     }
 
-    changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(251, 186, 0, 0.3) 0%, rgba(0, 0, 0, 0) 80%)');
-    changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(255, 193, 0)');
-    changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgb(36, 255, 0)');
-    changeColor(document.getElementsByClassName("collapsible-frame"), 'background-color', 'rgba(255, 193, 0,0.3)');
-    document.getElementById('collapsible-title').innerText = 'Aktuelle Warnstufe: 1';
+    if (/*inc7d > 100 && (*/incHospital >= 3 /*|| intMedCapacity > 6) || (incHospital >= 5 && intMedCapacity > 6)*/) {
+        changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(255, 220, 78, 0.3) 0%, rgba(0, 0, 0, 0) 50%)');
+        changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgb(255,220,78)');
+        changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgba(230, 255, 0, 1)');
+        changeColor(document.getElementsByClassName("collapsible-frame-colored"), 'background-color', 'rgb(255,220,78)');
+        document.getElementById('collapsible-title').innerText = 'Hospitalisierungsinzidenz: Über 3 (gelb)';
+        return;
+    }
+
+    changeColor(document.getElementsByClassName("body"), 'background', 'linear-gradient(to bottom, rgba(187, 255, 0, 0.3) 0%, rgba(0, 0, 0, 0) 50%)');
+    changeColor(document.getElementsByClassName("collapsible-header"), 'background-color', 'rgba(187, 255, 0, 1)');
+    changeColor(document.getElementsByClassName("circle-indicator"), 'background-color', 'rgba(36, 255, 0, 1)');
+    changeColor(document.getElementsByClassName("collapsible-frame-colored"), 'background-color', 'rgba(187, 255, 0, 1)');
+    document.getElementById('collapsible-title').innerText = 'Hospitalisierungsinzidenz: Unter 3';
 }
 
 function changeColor(collection, element, color) {

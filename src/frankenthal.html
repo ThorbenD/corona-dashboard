@@ -12,7 +12,7 @@
     <title>Dashboard - Coronafallzahlen Frankenthal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@next/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="dataProcessor_obf.js"></script>
+    <script src="dataProcessor.js"></script>
     <script src="lib/jquery-1.8.1.min.js"></script>
     <script src="lib/jquery.align-column.js"></script>
     <link href="style.css" rel="stylesheet" type="text/css">
@@ -27,7 +27,7 @@
         <div class="collapsible">
             <button class="collapsible-toggle collapsible-header" type="button">
                 <div class="circle-indicator"></div>
-                <div class="collapsible-title" id="collapsible-title">Aktuelle Warnstufe: -</div>
+                <div class="collapsible-title" id="collapsible-title">Hospitalisierungsinzidenz: -</div>
             </button>
             <div class="content" data-name="collapsible-content" stackColumnsAt="tablet">
                 <div class="columns">
@@ -36,7 +36,7 @@
                         <div class="container-value" id="cases7d_per_100k">0</div>
                         <div class="container-description">Frankenthal</div>
                     </div>
-                    <div class="collapsible-frame">
+                    <div class="collapsible-frame collapsible-frame-colored">
                         <div class="container-title">7-Tage-Hospitalisierungsinzidenz</div>
                         <div class="container-value" id="incHospital">0</div>
                         <div class="container-description">auf 100.000 Einwohner</div>
@@ -93,13 +93,11 @@
                 </div>
                 <div class="chart-container">
                     <div class="chartAreaWrapper">
-                        <div class="chartAreaWrapper2">
-                            <canvas id="chart_inc7d"></canvas>
-                            <section class="range-slider">
-                                <input class="slider" max="" min="0" type="range" value=""/>
-                                <input class="slider" max="" min="1" type="range" value=""/>
-                            </section>
-                        </div>
+                        <canvas id="chart_inc7d"></canvas>
+                        <section class="range-slider">
+                            <input class="slider" max="" min="0" type="range" value=""/>
+                            <input class="slider" max="" min="1" type="range" value=""/>
+                        </section>
                     </div>
                     <canvas height="0" id="myChartAxis" width="0"></canvas>
                     <button class="collapsible-toggle table-collapsible-header" type="button">
